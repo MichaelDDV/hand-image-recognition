@@ -1,8 +1,6 @@
-# Credit to https://github.com/sankit1/cv-tricks.com/tree/master/Tensorflow-tutorials/tutorial-2-image-classifier
-# Slightly modified version of predict.py, this file is callable. Edit the parameters in the calls to
-# tf.train.import_meta_graph() and saver.restore() to use the desired model and its meta graph.
-# Then edit the startpath. Once the parameters are set up, running this script will use your model to classify your
-# testing data, giving overall accuracy (right vs wrong) in each class.
+# Utilizes code from
+# https://github.com/sankit1/cv-tricks.com/tree/master/Tensorflow-tutorials/tutorial-2-image-classifier
+# in predicty.py to classify the most recent image in a folder. Used for our demo presentation.
 import tensorflow as tf
 import numpy as np
 import os,glob,cv2
@@ -61,50 +59,30 @@ def predictImage(image_path):
     return result
     # result is of this format [probabiliy_of_rose probability_of_sunflower]
 
-# startpath = 'testing_data/fivev1/'
-# correct = 0
-# incorrect = 1
-# for filename in os.listdir(startpath):
-#     imagepath = startpath + filename
-#     result = predictImage(imagepath).tolist()
-#     maxIndex = result[0].index(max(result[0]))
-#     handDict = {0:'five',1:'four',2:'one',3:'three',4:'two'}
-#     if handDict[maxIndex] in imagepath:
-#         print('Correct')
-#         correct += 1
-#     else:
-#         print('Incorrect')
-#         incorrect += 1
-#     print(result)
-# print('Correct: ' + str(correct))
-# print('Incorrect: ' + str(incorrect))
+max_mtime = 0
+startpath = 'testing_data/onev1/' # Needs a '/' at the end
+for fname in os.listdir(startpath):
+    full_path = startpath + fname
+    mtime = os.stat(full_path).st_mtime
+    if mtime > max_mtime:
+        max_mtime = mtime
+        max_dir = startpath
+        max_file = full_path
+result = predictImage(max_file).tolist()
+maxIndex = result[0].index(max(result[0]))
+handDict = {0:'five',1:'four',2:'one',3:'three',4:'two'}
 
-
-startpath = 'testing_data/'
-overallResults = []
-for directory in os.listdir(startpath):
-    correct = 0
-    incorrect = 1
-    directorypath = startpath + directory + '/'
-    for filename in os.listdir(directorypath):
-        imagepath = directorypath + filename
-        # print(imagepath)
-        result = predictImage(imagepath).tolist()
-        maxIndex = result[0].index(max(result[0]))
-        handDict = {0:'five',1:'four',2:'one',3:'three',4:'two'}
-        print(imagepath)
-        if handDict[maxIndex] in imagepath:
-            print('Correct')
-            correct += 1
-        else:
-            print('Incorrect')
-            incorrect += 1
-        print(correct+incorrect)
-        if(correct+incorrect>40):
-            break
-
-    print(directory)
-    print('Correct: ' + str(correct))
-    print('Incorrect: ' + str(incorrect))
-    overallResults.append([directory,correct,incorrect])
-print(overallResults)
+correctPrediction = "correct" if handDict[maxIndex] in startpath else "incorrect"
+import tkinter as tk
+from PIL import ImageTk, Image
+root = tk.Tk()
+root.title("How many fingers are you holding up?")
+root.geometry("800x400")
+imagepath = max_file
+img = ImageTk.PhotoImage(Image.open(imagepath))
+panel = tk.Label(root, image = img)
+panel.pack(side = "bottom", fill = "both", expand = "yes")
+displaytext = tk.Label(root, height=5, width=30, text= (handDict[maxIndex] + " -- " + str(correctPrediction)))
+displaytext.config(font=("Verdana", 32))
+displaytext.pack(side="top")
+root.mainloop()
