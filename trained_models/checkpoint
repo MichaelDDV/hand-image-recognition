@@ -1,0 +1,2 @@
+model_checkpoint_path: "one-through-five-model-16-gputest"
+all_model_checkpoint_paths: "one-through-five-model-16-gputest"
